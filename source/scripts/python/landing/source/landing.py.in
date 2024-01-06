@@ -8,7 +8,7 @@ sys.path.insert(0, '@PROJECT_METACALL_PORTS_DIRECTORY@')
 
 from metacall import metacall_load_from_file, metacall
 
-print('[DEBUG] PyPort: ' + str(metacall))
+print(f'[DEBUG] PyPort: {str(metacall)}')
 
 # Load scripts
 metacall_load_from_file('node', ['auth/auth.js'])

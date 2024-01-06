@@ -66,13 +66,15 @@ def metacall_module_load():
 	library_names = ['py_loaderd', 'py_loader']
 
 	for name in library_names:
-		runtime_module_handle = get_loaded_module(modules, os.path.join(os.path.sep, base_path, name + '.dll'))
+		runtime_module_handle = get_loaded_module(
+			modules, os.path.join(os.path.sep, base_path, f'{name}.dll')
+		)
 		if runtime_module_handle is None:
 			continue
 		runtime_module = ctypes.CDLL('', handle = runtime_module_handle) # cdecl calling convention
 
 		if runtime_module != None:
-			func_name = 'PyInit_' + name
+			func_name = f'PyInit_{name}'
 			if runtime_module[func_name]:
 				init = runtime_module[func_name]
 				init.restype = ctypes.py_object

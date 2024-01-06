@@ -15,24 +15,21 @@ class MyClass():
         return 0
 
     def return_bye(self, name):
-        return "bye " + name
+        return f"bye {name}"
 
     def check_args(self, a, b):
         print(a, b)
-        if a == 4 and b == 7:
-            return 15
-        else:
-            return 3
+        return 15 if a == 4 and b == 7 else 3
 
     @classmethod
-    def class_method(return_val):
-        return return_val
+    def class_method(cls):
+        return cls
 
     @staticmethod
     def static(return_val):
         return return_val
     
-    async def asynk(return_val):
+    async def asynk(self):
         return "synk"
 
 """

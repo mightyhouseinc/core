@@ -96,7 +96,7 @@ class py_port_test(unittest.TestCase):
 
 	# MetaCall (Rust)
 	def test_rust(self):
-		if os.environ.get('OPTION_BUILD_LOADERS_RS') == None: return
+		if os.environ.get('OPTION_BUILD_LOADERS_RS') is None: return
 
 		from basic.rs import add, add_float, string_len, new_string
 
