@@ -17,14 +17,14 @@ async def async_eval(code, **kwargs):
 	# This code saves __name__ and __package into a kwarg passed to the function.
 	# It is set before the users code runs to make sure relative imports work
 	global_args = "_globs"
-	while global_args in globs.keys():
+	while global_args in globs:
 		# Make sure there's no name collision, just keep prepending _s
-		global_args = "_" + global_args
+		global_args = f"_{global_args}"
 	kwargs[global_args] = {}
 	for glob in ["__name__", "__package__"]:
 		# Copy data to args we are sending
 		kwargs[global_args][glob] = globs[glob]
- 
+
 	root = ast.parse(code, 'exec')
 	code = root.body
 	# If we can use it as a lambda return (but multiline)
@@ -46,22 +46,28 @@ async def async_eval(code, **kwargs):
 		a.lineno = 0
 		a.col_offset = 0
 		args += [a]
-	fun = ast.AsyncFunctionDef('tmp', ast.arguments(
-		args=[],
-		vararg=None,
-		kwonlyargs=args,
-		posonlyargs=[],
-		kwarg=None,
-		defaults=[],
-		kw_defaults=[None for i in range(len(args))]), code, [], None
+	fun = ast.AsyncFunctionDef(
+		'tmp',
+		ast.arguments(
+			args=[],
+			vararg=None,
+			kwonlyargs=args,
+			posonlyargs=[],
+			kwarg=None,
+			defaults=[],
+			kw_defaults=[None for _ in range(len(args))],
+		),
+		code,
+		[],
+		None,
 	)
 	fun.lineno = 0
 	fun.col_offset = 0
 	mod = ast.Module([fun], type_ignores=[])
 	comp = compile(mod, '<string>', 'exec')
- 
+
 	exec(comp, {}, locs)
- 
+
 	with temp_stdio() as out:
 		result = await locs["tmp"](**kwargs)
 		try:

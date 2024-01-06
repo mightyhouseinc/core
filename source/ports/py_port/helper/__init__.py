@@ -47,40 +47,39 @@ def find_assets(patterns):
 
 def download(urls):
 	for url in urls:
-		filename = '/tmp/{}'.format(url.split("/")[-1])
+		filename = f'/tmp/{url.split("/")[-1]}'
 
-		if os.path.isfile(filename + '.tmp'):
-			os.remove(filename + '.tmp')
+		if os.path.isfile(f'{filename}.tmp'):
+			os.remove(f'{filename}.tmp')
 
-		with open(filename + '.tmp', 'wb') as file:
+		with open(f'{filename}.tmp', 'wb') as file:
 			res = requests.get(url, stream=True)
 			total_length = res.headers.get('content-length')
 
 			if total_length is None or int(total_length) < 4096:
-				print('Downloading {} from {}\n'.format(url.split("/")[-1], url))
+				print(f'Downloading {url.split("/")[-1]} from {url}\n')
 				file.write(res.content)
 			else:
 				dl = 0
 				total_length = int(total_length)
-				print('Downloading {} (total: {}) from {}\n'.format(url.split("/")[-1], total_length, url))
+				print(f'Downloading {url.split("/")[-1]} (total: {total_length}) from {url}\n')
 				for data in res.iter_content(chunk_size=4096):
 					dl += len(data)
 					file.write(data)
 					done = int(50 * dl / total_length)
 					sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
 					sys.stdout.write(
-						'\r[{}{}] - {}/{}'.format('=' * done, ' ' * (50 - done),
-												  file_size(dl), file_size(total_length))
+						f"\r[{'=' * done}{' ' * (50 - done)}] - {file_size(dl)}/{file_size(total_length)}"
 					)
 					sys.stdout.flush()
 				print('\n')
 
-		os.rename(filename + '.tmp', filename)
+		os.rename(f'{filename}.tmp', filename)
 
 def unpack(files):
 	for filename in files:
 		filename = filename.split("/")[-1]
-		print('Extracting {} ...'.format(filename))
+		print(f'Extracting {filename} ...')
 		with tarfile.open(filename) as file:
 			file.extractall()
 
@@ -103,7 +102,7 @@ def overwrite(src, dest):
 		for file in files:
 			yield from overwrite(os.path.join(src, file), os.path.join(dest, file))
 	else:
-		print('copying {} to {}'.format(src, dest))
+		print(f'copying {src} to {dest}')
 		shutil.copyfile(src, dest)
 		yield str(dest)
 
@@ -116,7 +115,7 @@ def spawn(args):
 def pre_install(components):
 	download(['https://raw.githubusercontent.com/metacall/core/develop/tools/metacall-runtime.sh'])
 	args = ['bash', '/tmp/metacall-runtime.sh']
-	args = args + components
+	args += components
 	subprocess.call(args)
 
 def pre_install_prompt():
@@ -127,7 +126,7 @@ def pre_install_prompt():
 	try:
 		while True:
 			for component in components:
-				message = '''do you want to install {} (y/n)? '''.format(component)
+				message = f'''do you want to install {component} (y/n)? '''
 				sys.stdout.write(message)
 				choice = input().lower()
 				if choice in answers and answers[choice]:
@@ -135,7 +134,7 @@ def pre_install_prompt():
 				elif choice not in answers:
 					sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
 					exit(0)
-			if len(args) == 0:
+			if not args:
 				exit(0)
 			pre_install(args)
 			break
@@ -165,9 +164,9 @@ def install(ignore=False):
 		assets = find_assets([r'metacall-[0-9].[0-9].[0.9]-runtime.tar.gz',
 							  r'metacall-[0-9].[0-9].[0.9]-examples.tar.gz'])
 
-		missing_files = [file for file in assets if not os.path.isfile(file.split('/')[-1])]
-
-		if len(missing_files) != 0:
+		if missing_files := [
+			file for file in assets if not os.path.isfile(file.split('/')[-1])
+		]:
 			download(missing_files)
 
 		unpack(assets)
@@ -178,8 +177,9 @@ def install(ignore=False):
 
 		output, error, code = spawn(['ldconfig', '-n', '-v', '/usr/local/lib/'])
 		if code != 0:
-			print('Failed to install MetaCall\n{}\n'
-				  'please proceed with the manual installation. {}'.format(error.decode('utf-8'), docs))
+			print(
+				f"Failed to install MetaCall\n{error.decode('utf-8')}\nplease proceed with the manual installation. {docs}"
+			)
 			exit(1)
 		else:
 			print(output.decode('utf-8'))
@@ -197,9 +197,13 @@ def install(ignore=False):
 		print('MetaCall CLI is successfully installed.')
 
 	except ConnectionError:
-		print('Downloading process failed, please proceed with the manual installation. {}'.format(docs))
+		print(
+			f'Downloading process failed, please proceed with the manual installation. {docs}'
+		)
 	except tarfile.ExtractError:
-		print('Extraction process failed, please proceed with the manual installation. {}'.format(docs))
+		print(
+			f'Extraction process failed, please proceed with the manual installation. {docs}'
+		)
 	except KeyboardInterrupt:
 		print('\nCanceled by user.')
 
@@ -226,7 +230,9 @@ def uninstall_prompt():
 * for a complete uninstall you have to run metacall-uninstall && pip uninstall metacall 
 * (the order of execution is important)
 
-Proceed (y/n)? '''.format(''.join('''{}\n   '''.format(l) for l in paths))
+Proceed (y/n)? '''.format(
+		''.join(f'''{l}\n   ''' for l in paths)
+	)
 
 	answers = {'yes': True, 'y': True, 'no': False, 'n': False}
 

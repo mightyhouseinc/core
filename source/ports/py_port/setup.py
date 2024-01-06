@@ -113,9 +113,6 @@ options = {
 	#data_files: [('my_data', ['data/data_file'])],
 }
 
-# Exclude base packages
-exclude_packages =  ['contrib', 'docs', 'tests', 'CMakeLists.txt']
-
 # TODO: Review helper
 # # Detect if metacall port is already installed
 # port_installed = False
@@ -132,47 +129,7 @@ for root, dirs, _ in os.walk(rootdir):
 		if regex.match(folder) and not folder.endswith('R'):
 			sys.path.append(os.path.join(rootdir, folder, 'lib'))
 
-# TODO: Review helper
-# # Find if module is installed
-# if sys.version_info[0] < 3:
-# 	# Python 2.7
-# 	import imp
-# 	try:
-# 		imp.find_module('_py_port')
-# 		port_installed = True
-# 	except ImportError:
-# 		try:
-# 			imp.find_module('_py_portd')
-# 			port_installed = True
-# 		except ImportError:
-# 			pass
-# elif sys.version_info[0] >= 3 and sys.version_info[1] <= 3:
-# 	# Python <= 3.3
-# 	import importlib
-# 	py_port = importlib.find_loader('_py_port')
-# 	port_installed = py_port is not None
-# 	if port_installed == False:
-# 		py_port = importlib.find_loader('_py_portd')
-# 		port_installed = py_port is not None
-# elif sys.version_info[0] >= 3 and sys.version_info[1] > 3:
-# 	# Python >= 3.4
-# 	import importlib
-# 	py_port = importlib.util.find_spec("_py_port")
-# 	port_installed = py_port is not None
-# 	if port_installed == False:
-# 		py_port = importlib.util.find_spec("_py_portd")
-# 		port_installed = py_port is not None
-
-# TODO: This code is very interesting for providing commands to the end user.
-#	pip cannot execute arbitrary code as pre/post install hook when the package is being installed.
-#	So it is impossible to install the binaries unless we add extra commands after install.
-#	At this moment there is a common solution for installing binaries depending on Bash/PowerShell
-#	that is OS dependant and not language dependant. By the moment we will use the new way of install
-#	instead of the old one, but we keep the ./helper folder in order to provide future support for
-#	extra commands, although the main idea is to keep the OS dependant install, this can be useful
-#	for updating or doing Python related things. Meanwhile, it will be avoided.
-exclude_packages.append('helper')
-
+exclude_packages = ['contrib', 'docs', 'tests', 'CMakeLists.txt', 'helper']
 # TODO: Review helper
 # if port_installed == True:
 # 	# Exclude helper package if port is already installed

@@ -6,4 +6,4 @@
 def multiply_type(a: int, b: int) -> int:
 	return a * b
 
-print('Test: ' + str(multiply_type(33336666, 2)))
+print(f'Test: {str(multiply_type(33336666, 2))}')

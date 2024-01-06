@@ -42,7 +42,7 @@ def bytebuff(input: bytes) -> bytes:
 	return buffer
 
 def return_array():
-	return list([1, 2, 3])
+	return [1, 2, 3]
 
 def return_same_array(arr):
 	return arr

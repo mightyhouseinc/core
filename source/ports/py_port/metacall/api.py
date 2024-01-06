@@ -26,7 +26,7 @@ if sys.platform == 'win32':
 	from metacall.module_win32 import metacall_module_load
 elif sys.platform == 'linux':
 	from metacall.module_linux import metacall_module_load
-elif sys.platform == 'darwin' or sys.platform == 'cygwin':
+elif sys.platform in ['darwin', 'cygwin']:
 	print('\x1b[31m\x1b[1m', 'The platform', sys.platform, 'has not been not tested, but we are using linux module as a fallback.', '\x1b[0m')
 	# TODO: Probably it won't work, but we use it as a fallback, implement other platforms
 	from metacall.module_linux import metacall_module_load
@@ -37,7 +37,7 @@ else:
 module = metacall_module_load()
 
 # Check if library was found and print error message otherwhise
-if module == None:
+if module is None:
 	print('\x1b[31m\x1b[1m', 'You do not have MetaCall installed or we cannot find it.', '\x1b[0m')
 	print('\x1b[1m', 'Looking for it in the following paths:', sys.path, '\x1b[0m')
 	print('\x1b[33m\x1b[1m', 'If you do not have it installed, you have three options:', '\x1b[0m')
@@ -65,8 +65,7 @@ def metacall(function_name, *args):
 
 # Wrap metacall inspect and transform the json string into a dict
 def metacall_inspect():
-	data = module.metacall_inspect()
-	if data:
+	if data := module.metacall_inspect():
 		dic = json.loads(data)
 		try:
 			del dic['__metacall_host__']
@@ -171,14 +170,14 @@ def __metacall_import__(name, globals=None, locals=None, fromlist=(), level=0):
 	}
 
 	# Set containing all tags
-	available_tags = set({**file_extensions_to_tag, **package_extensions_to_tag})
+	available_tags = set(file_extensions_to_tag | package_extensions_to_tag)
 
 	# Try to load by module: import metacall.node.ramda
 	metacall_module_import = name.split('.')
 	metacall_module_import_size = len(metacall_module_import)
 
 	if metacall_module_import_size > 1 and metacall_module_import[0] == 'metacall':
-		if not metacall_module_import[1] in available_tags:
+		if metacall_module_import[1] not in available_tags:
 			raise ImportException(f'MetaCall could not import: {name}; the loader {metacall_module_import[1]} does not exist')
 
 		def _metacall_module_import(module_tag, module_name, return_root):
@@ -212,10 +211,7 @@ def __metacall_import__(name, globals=None, locals=None, fromlist=(), level=0):
 				setattr(metacall_module_tag, module_name, imported_module)
 				setattr(metacall_module, module_tag, metacall_module_tag)
 
-				if return_root == True:
-					return metacall_module
-				else:
-					return metacall_module_tag
+				return metacall_module if return_root == True else metacall_module_tag
 			else:
 				raise ImportException(f'MetaCall could not import: {name}')
 
@@ -244,10 +240,7 @@ def __metacall_import__(name, globals=None, locals=None, fromlist=(), level=0):
 	if extension != '':
 		ext = extension[1:]
 
-		if (
-			ext in file_extensions_to_tag.keys()
-			or ext in package_extensions_to_tag.keys()
-		):
+		if ext in file_extensions_to_tag or ext in package_extensions_to_tag:
 			# Check if it is already loaded in MetaCall
 			handle = find_handle(name)
 
@@ -255,7 +248,7 @@ def __metacall_import__(name, globals=None, locals=None, fromlist=(), level=0):
 				# Generate the module from cached handle
 				return generate_module(filename, handle)
 
-			if ext in file_extensions_to_tag.keys():
+			if ext in file_extensions_to_tag:
 				# Load from file
 				file_tag = file_extensions_to_tag[ext]
 
@@ -264,7 +257,7 @@ def __metacall_import__(name, globals=None, locals=None, fromlist=(), level=0):
 				else:
 					handle = module.metacall_load_from_file_export(file_tag, [name])
 
-			elif ext in package_extensions_to_tag.keys():
+			elif ext in package_extensions_to_tag:
 				# Load from package
 				package_tag = package_extensions_to_tag[ext]
 
